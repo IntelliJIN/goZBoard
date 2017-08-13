@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"gozboard/configuration"
+	"goZBoard/configuration"
 	"io"
 	"net/http"
 	"os"
@@ -15,7 +15,7 @@ import (
 
 const (
 	ZkbRequestTimeFormat = "200601021500"
-	ZkbKillTimeFormat    = "2017-08-12 12:07:04"
+	ZkbKillTimeFormat    = "2006-01-02 15:04:05"
 )
 
 var nilTime = (time.Time{}).UnixNano()
@@ -158,11 +158,13 @@ func main() {
 				jsonkill, err := json.Marshal(k)
 				if err != nil {
 					fmt.Println("JSON Marshal error: ", err)
+					break
 				}
 				var kill KillData
 				err = json.Unmarshal(jsonkill, &kill)
 				if err != nil {
 					fmt.Println("JSON Unmarshal error: ", err)
+					break
 				}
 				for _, lastHit := range kill.Attackers {
 					if lastHit.FinalBlow == 1 {
@@ -170,7 +172,6 @@ func main() {
 						break
 					}
 				}
-				fmt.Println("Kill: ", kill, kill.Zkb)
 				kills = append(kills, kill)
 			}
 		}
