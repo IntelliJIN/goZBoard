@@ -1,10 +1,10 @@
 {
-  "slackChannel": "#killboard",
-  "slackURL": "",
+  "slackChannel": "#killmails",
   "corporationID": "98423187",
   "allianceID": "99004344",
-  "mode": "",
-  "zKillboardURL": "https://zkillboard.com/api/",
+  "zKillboardAPIURL": "https://zkillboard.com/api/",
+  "zKillboardURL": "https://zkillboard.com/",
   "slackUserName": "GoZKillBoard",
-  "slackIcon": ":ghost:"
+  "slackIcon": ":ghost:",
+  "webHookURL": "https://hooks.slack.com/services/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"
 }

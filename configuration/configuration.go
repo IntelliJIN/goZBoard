@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
-	"github.com/kelseyhightower/envconfig"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
@@ -12,13 +12,14 @@ import (
 
 // Config is a inner representation of the application's options
 type Config struct {
-	ZKillBoardUrl string
-	SlackChannel  string
-	SlackURL      string
-	CorporationID string
-	AllianceID    string
-	SlackUserName string
-	SlackIcon     string
+	ZKillBoardURL    string
+	ZKillBoardAPIURL string
+	SlackChannel     string
+	CorporationID    string
+	AllianceID       string
+	SlackUserName    string
+	SlackIcon        string
+	WebHookURL       string
 }
 
 // isMissing validates Configuration
@@ -26,64 +27,47 @@ func (c *Config) isMissing() bool {
 	switch {
 	case len(c.CorporationID) == 0 && len(c.AllianceID) == 0:
 		return true
-	case len(c.ZKillBoardUrl) == 0:
+	case len(c.ZKillBoardURL) == 0 || len(c.ZKillBoardAPIURL) == 0:
 		return true
-	case len(c.SlackChannel) == 0:
+	case len(c.SlackChannel) == 0 || len(c.WebHookURL) == 0:
 		return true
-	case len(c.SlackURL) == 0:
-		return true
-	case len(c.SlackUserName) == 0:
-		return true
-	case len(c.SlackIcon) == 0:
+	case len(c.SlackUserName) == 0 || len(c.SlackIcon) == 0:
 		return true
 	default:
 		return false
 	}
 }
 
-// Cfg is a package variable, which is populated during init() execution and shared to whole application
-var Cfg Config
+//NewConfig creates new config
+func NewConfig() *Config {
+	return &Config{}
+}
 
 // LoadConfiguration reading and loading configuration to Config variable
-func LoadConfiguration(configFilePath string) {
+func (c *Config) LoadConfiguration(configFilePath string) {
 	var err error
-	if len(configFilePath) != 0 {
-		// read configuration from JSON
-		err = readConfigFromJSON(configFilePath)
-	} else {
-		// read configuration from ENVIRONMENT
-		err = readConfigFromENV()
-	}
+	err = c.readConfigFromJSON(configFilePath)
 	if err != nil {
+		fmt.Println("ERROR: ", err)
 		log.Fatal(`Remote tools not found. Please specify configuration`)
 		os.Exit(1)
 	}
 }
 
 //readConfigFromJSON read configuration from conf.json
-func readConfigFromJSON(configFilePath string) error {
+func (c *Config) readConfigFromJSON(configFilePath string) error {
 	log.Printf("Looking for JSON config file in: %s\n", configFilePath)
 
 	contents, err := ioutil.ReadFile(configFilePath)
 	if err == nil {
 		reader := bytes.NewBuffer(contents)
-		err = json.NewDecoder(reader).Decode(&Cfg)
+		err = json.NewDecoder(reader).Decode(&c)
 	}
 	if err != nil {
 		log.Printf("Reading configuration from JSON (%s) failed: %s\n", configFilePath, err)
 	}
-
-	return err
-}
-
-//readConfigFromENV read configuration from environment if conf.json is missing
-func readConfigFromENV() (err error) {
-	log.Println("Looking for ENV configuration")
-
-	err = envconfig.Process("cm", &Cfg)
-	if err == nil && Cfg.isMissing() {
+	if c.isMissing() {
 		err = errors.New("Configuration is missing")
 	}
-
 	return err
 }
